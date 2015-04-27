@@ -1,0 +1,3 @@
+<apex:page standardController="Account" >
+   <c:AccountCustomDetails accountId="{!account.Id}" industry="{!account.Industry}" />
+</apex:page>

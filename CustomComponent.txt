@@ -1,0 +1,23 @@
+<apex:component controller="AccountCustomDetailsController" allowDML="true" >
+    <apex:attribute name="accountId" description="The Id of the account for which details are to be displayed."
+        type="String" required="true" assignTo="{!acdAccountId}" />
+    <apex:attribute name="industry" description="The industry of the account for which details are to be displayed."
+        type="String" required="true" assignTo="{!acdIndustry}" />
+    <apex:attribute name="editmode" description="Use the component in edit or view mode. Default is false"
+        type="Boolean" default="false" />
+    <apex:form rendered="{!fields.size > 0}" >
+        <apex:pageBlock mode="detail" >
+            <apex:pageblockButtons location="top">
+                <apex:commandButton action="{!edit}" value="Edit" rendered="{!editmode==false}"/>
+                <apex:commandButton action="{!save}" value="Save" rendered="{!editmode}"/>
+                <apex:commandButton action="{!cancel}" value="Cancel" rendered="{!editmode}"/>
+            </apex:pageblockButtons>
+            <apex:pageblocksection >
+                <apex:repeat value="{!fields}" var="f">
+                    <apex:outputField value="{!acdAccount[f.fieldPath]}" rendered="{!editmode==false}" />
+                    <apex:inputField value="{!acdAccount[f.fieldPath]}" rendered="{!editmode}" />
+                </apex:repeat>
+            </apex:pageblocksection>
+        </apex:pageBlock>
+    </apex:form>
+</apex:component>

@@ -1,0 +1,73 @@
+public with sharing class AccountCustomDetailsController {
+    //we will bind our first 2 parameters in the component below to the first two properties
+    public String acdAccountId {get; set;}
+    public String acdIndustry {get; set;}
+
+    //we will use this property to pass data for the optional fields
+    //I had to do the getter method this way because of a Salesforce.com quirk
+    public Account acdAccount {
+        get {
+            if (acdAccount == null) {
+                acdAccount = lookupAccount();
+            }
+            return acdAccount;
+        }
+        set;
+    }
+
+    public AccountCustomDetailsController() {}
+
+    //this method determines the optional fields to be used by fetching the field set
+    //we built the field set name in a specific way to dynamically choose the correct one. One
+    //alternative would be to hard code this logic: if (acdIndustry==’blah’) fieldSet = ‘one’;
+    //A fancier way would be to create a custom object to hold the mappings
+    public List<Schema.FieldSetMember> getFields() {
+        String fieldSetName = '';
+
+        if (String.isNotEmpty(acdIndustry)) {
+            fieldSetName = acdIndustry.deleteWhitespace() + 'FieldSet';
+        }
+
+        if (SObjectType.Account.FieldSets.getMap().containsKey(fieldSetName)) {
+            return SObjectType.Account.FieldSets.getMap().get(fieldSetName).getFields();
+        } else {
+            return new List<Schema.FieldSetMember>();
+        }
+    }
+
+    //This method builds a dynamic query based on the field set and grabs the data
+    //for the optional fields
+    public Account lookupAccount() {
+        String query = 'SELECT ';
+        for(Schema.FieldSetMember f : this.getFields()) {
+            query += f.getFieldPath() + ', ';
+        }
+        query += 'Id, Name FROM Account WHERE Id = :acdAccountId';
+        return Database.query(query);
+    }
+
+    //code behind the Edit button. Simply returns a page reference to the edit version
+    //of our custom work
+    public PageReference edit() {
+        PageReference p = Page.AccountCustomDetailsEdit;
+        p.getParameters().put('id',ApexPages.currentPage().getParameters().get('Id'));
+        return p;
+    }
+
+    //code behind the Save button. Since the component maps the input fields directly to the
+    //database fields, all we have to do is update
+    public PageReference save() {
+        update acdAccount;
+
+        PageReference p = Page.AccountCustomDetails;
+        p.getParameters().put('id',ApexPages.currentPage().getParameters().get('Id'));
+        return p;
+    }
+
+    //code behind the Cancel button
+    public PageReference cancel() {
+        PageReference p = Page.AccountCustomDetails;
+        p.getParameters().put('id',ApexPages.currentPage().getParameters().get('Id'));
+        return p;
+    }
+}
